@@ -1,7 +1,7 @@
 from markdown_blocks import markdown_to_html_node
 import os
 def main():
-    generate_page("./content/index.md", "./template.html", "./public/index.html")
+    generate_pages_recursive("./content", "./template.html", "./public")
 
 def extract_title(doc):
     title = ""
@@ -29,8 +29,20 @@ def generate_page(from_path, template_path, dest_path):
     html_file = markdown_to_html_node(markdown_file).to_html()
     formated_html = template_file.replace(r"{{ Title }}", title)
     formated_html = formated_html.replace(r"{{ Content }}", html_file)
-
+    if not os.path.exists(os.path.dirname(dest_path)):
+        os.mkdir(os.path.dirname(dest_path))
     with open(dest_path, 'a') as file:
         file.write(formated_html)
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    content = os.listdir(dir_path_content)
+    for item in content:
+        item_path = os.path.join(dir_path_content, item)
+        item_dest_name = item.rstrip(".md") + ".html"
+        item_dest_path = os.path.join(dest_dir_path, item)
+        if os.path.isfile(item_path):
+            generate_page(item_path, template_path, os.path.join(dest_dir_path, item_dest_name))
+        else:
+            generate_pages_recursive(item_path, template_path, item_dest_path)
 
 main()
